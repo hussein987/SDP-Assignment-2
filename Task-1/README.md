@@ -23,3 +23,7 @@ When required to enter time, we use military time, examples:
 The institutes are automatically saved.
 To load a previusly saved institute, just use the first command and add the
 institute and it will be automatically loaded.
+
+## Using Docker
+To build the image: `docker image build -t sdpy:1 .`
+To run the image: `docker run -i -t sdpy:1`
