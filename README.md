@@ -1,6 +1,11 @@
 # SDP-Assignment-2
 This repository contains the implementation of the [2nd Assignment](https://hackmd.io/@gFZmdMTOQxGFHEFqqU8pMQ/S1cZqwefo) of Software-Design-with-Python course
 
+## Team:
+Hussein Younes
+
+Yusuf Mesbah
+
 ## Task 1
 The **Remote control pattern** were used to execute the commands.  
 ### How to run:
