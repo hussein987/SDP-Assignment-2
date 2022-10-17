@@ -168,6 +168,7 @@ class CloudGaming:
         print("Average Dropped Frames :", float(groupby_df["dropped_frames"]))
         print("Average bitrate:", float(groupby_df["bitrate"]))
 
+    @save_to_file
     def get_status_of_last_week(self, save_to_txt=True):
 
         # Get the number of sessions
@@ -213,6 +214,7 @@ class CloudGaming:
     def predict_next_session_time(self):
         return self.avg_spent_per_session(self.user_data)[0]
 
+    @save_to_file
     def print_user_summary(self, save_to_txt=True):
         """
         Prints the user summary, which includes the following:
