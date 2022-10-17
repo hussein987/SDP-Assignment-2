@@ -28,12 +28,16 @@ if __name__ == "__main__":
                 cloud_gaming.update_query_data(user_id, time_interval)
                 cloud_gaming.print_user_summary(save_to_txt=True)
                 find_another_user = input("Find another user ? (yes/No)\n")
-                find_another_user = True if find_another_user.lower() == "yes" else False
+                find_another_user = (
+                    True if find_another_user.lower() == "yes" else False
+                )
         elif command == 3:
             # Predict user next session duration
             user_id = input("Enter user id:\n")
             cloud_gaming.update_query_data(user_id)
-            print(f"The estimated next session time is: {cloud_gaming.predict_next_session_time(cloud_gaming.user_data)}")
+            print(
+                f"The estimated next session time is: {cloud_gaming.predict_next_session_time(cloud_gaming.user_data)}"
+            )
         elif command == 4:
             # Fetch new data and update users data and ML model
             cloud_gaming.fetch_data()
@@ -42,5 +46,5 @@ if __name__ == "__main__":
             cloud_gaming.rank_users_by_gaming_time()
         elif command == 6:
             # Exit
-            print('Good bye!!')
+            print("Good bye!!")
             break

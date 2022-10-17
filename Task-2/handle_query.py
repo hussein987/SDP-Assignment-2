@@ -1,31 +1,26 @@
-from functools import total_ordering
 from utils import *
-
+from data_loader import file_ids
 import os
 import pandas as pd
-
-# TODO: Don't download the data locally, fetch it online at each query
-data_dir = (
-    "/Users/husseinyounes/University/Python/SDP-Assignment-2/Task-2/data/SSD2022AS2"
-)
+import gdown
 
 
 class CloudGaming:
-    def __init__(self, user_id="0116f41a-28b1-4d81-b250-15d7956e2be1", time_interval=["2022/07/10" - "2022/08/10"]):
+    def __init__(
+        self,
+        user_id="0116f41a-28b1-4d81-b250-15d7956e2be1",
+        time_interval=["2022/07/10" - "2022/08/10"],
+    ):
         # TODO: reset the time at the beginning of the program,
         # and update the time every five minutes
+        #
+        # >>>>>>>>>>>>>>>>>>> UPD. Done <<<<<<<<<<<<<<<<<
         self.user_id = user_id
         self.time_interval = time_interval
         self.initial_system_time = datetime.datetime.now()
 
-        # self.interval_data = self.load_data(
-        #     [parse_date(time_interval[0], "/"), parse_date(time_interval[1], "/")]
-        # )
-
-        first_day_data = os.path.join(
-            data_dir, sorted(os.listdir(data_dir))[0]
-        )  # Load the first day
-        self.current_data = pd.read_csv(first_day_data)
+        gdown.download(id=file_ids[0], output=f"file_{0}.csv")
+        self.current_data = pd.read_csv(f"file_{0}.csv")
         self.current_data["timestamp"] = pd.to_datetime(
             self.current_data["timestamp"]
         )  # convert column to datetime
@@ -35,6 +30,7 @@ class CloudGaming:
         ]
 
         self.start_date = self.current_data.iloc[0]["timestamp"]
+        self.current_day = 1
 
         # TODO: 1. Add the data updates every 5 mins
         #       2. Add self.current_data
@@ -43,8 +39,13 @@ class CloudGaming:
         # data might not have fetched yet.
         # Similarly, self.current_data is the data that is currently fetched
         # depending on the time.
+        #
+        # >>>>>>>>>>>>>>>>>>> UPD. Done <<<<<<<<<<<<<<<<<
 
     def update_query_data(self, *args):
+        """
+        Update the query given new data
+        """
         self.user_id = args[0]
         self.user_data = self.current_data[
             self.current_data["client_user_id"] == self.user_id
@@ -52,26 +53,15 @@ class CloudGaming:
         if len(args > 1):
             self.time_interval = args[1]
 
-    def load_data(self, time_interval):
+    def load_data(self, range_dates):
         """
         Fetches the data from a give time interval
         """
-        # TODO: Load the data that is relavant to the current interval
-        def get_date_from_filename(filename):
-            date_splitted = "_".join(filename.split(".")[0].split("_")[1:])
-            parsed_date = parse_date(date_splitted, "_")
-            return parsed_date
 
-        for filename in sorted(os.listdir(data_dir)):
-            date = get_date_from_filename(filename)
-            if (
-                time_interval[0] <= date <= time_interval[1]
-                and date > self.current_data.iloc[-1]["timestamp"]
-            ):
-                current_df = pd.read_csv(os.path.join(data_dir, filename))
-                self.current = pd.concat(
-                    [self.current_data, current_df], ignore_index=True
-                )
+        for idx in range_dates:
+            gdown.download(id=file_ids[idx], output=f"file_{idx}.csv")
+            temp_df = pd.read_csv(f"file_{idx}.csv")
+            self.current = pd.concat([self.current_data, temp_df], ignore_index=True)
 
         return self.current_data
 
@@ -103,9 +93,7 @@ class CloudGaming:
         Get the average time per session in the given df,
         and also returns the sum of all time spent across all sessions
         """
-        user_data = self.current_data[
-            self.current_data["client_user_id"] == user_id
-        ]
+        user_data = self.current_data[self.current_data["client_user_id"] == user_id]
         sessions = user_data["session_id"].unique()
 
         total = 0
@@ -156,11 +144,13 @@ class CloudGaming:
         return False
 
     def get_statistics(self):
-        # Average of :
-        #   1) Round trip time (RTT)
-        #   2) Frames per Second
-        #   3) Dropped Frames
-        #   4) bitrate
+        """
+        Average of :
+                1) Round trip time (RTT)
+                2) Frames per Second
+                3) Dropped Frames
+                4) bitrate
+        """
         user_df = self.current_data[self.current_data["client_user_id"] == self.user_id]
         groupby_df = user_df.groupby(["client_user_id"]).mean()
         print("Average Round trip time (RTT) :", float(groupby_df["RTT"]))
@@ -242,14 +232,18 @@ class CloudGaming:
             print(f"\tDate of most recent session : {self.get_session(-1)}")
             print(f"Most frequently used device : {self.get_most_used_device()[1]}")
             print(f"Devices used : {self.get_most_used_device()[0]}")
-            print(f"Estimated next session time : {self.avg_spent_per_session(self.user_data)[0]}")
+            print(
+                f"Estimated next session time : {self.avg_spent_per_session(self.user_data)[0]}"
+            )
             print(f"Super user : {self.is_super_user()}")
             self.get_statistics()
-        
+
     def rank_users_by_gaming_time(self):
         get_dict = lambda y: dict((self.avg_spent_per_session(x), len(x)) for x in y)
-        times_spent = get_dict(self.current_data['client_user_id'].unique())
-        ranked_list = list(sorted(times_spent.items(), key=lambda item: item[1], reverse=True))[:5]
+        times_spent = get_dict(self.current_data["client_user_id"].unique())
+        ranked_list = list(
+            sorted(times_spent.items(), key=lambda item: item[1], reverse=True)
+        )[:5]
         i = 0
         print(f"Rank{' ' * 20}User id{' ' * 18}Time spent gaming")
         for item in ranked_list:
@@ -257,4 +251,3 @@ class CloudGaming:
             time_spent_gaming = item[1]
             print(f"{i}\t{user_id}\t\t{time_spent_gaming}")
             i += 1
-
