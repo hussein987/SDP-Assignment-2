@@ -11,7 +11,7 @@ data_dir = (
 
 
 class CloudGaming:
-    def __init__(self, user_id, time_interval):
+    def __init__(self, user_id="0116f41a-28b1-4d81-b250-15d7956e2be1", time_interval=["2022/07/10" - "2022/08/10"]):
         # TODO: reset the time at the beginning of the program,
         # and update the time every five minutes
         self.user_id = user_id
@@ -30,7 +30,9 @@ class CloudGaming:
             self.current_data["timestamp"]
         )  # convert column to datetime
 
-        self.user_data = self.current_data[self.current_data["client_user_id"] == self.user_id]
+        self.user_data = self.current_data[
+            self.current_data["client_user_id"] == self.user_id
+        ]
 
         self.start_date = self.current_data.iloc[0]["timestamp"]
 
@@ -41,6 +43,14 @@ class CloudGaming:
         # data might not have fetched yet.
         # Similarly, self.current_data is the data that is currently fetched
         # depending on the time.
+
+    def update_query_data(self, *args):
+        self.user_id = args[0]
+        self.user_data = self.current_data[
+            self.current_data["client_user_id"] == self.user_id
+        ]
+        if len(args > 1):
+            self.time_interval = args[1]
 
     def load_data(self, time_interval):
         """
@@ -88,12 +98,15 @@ class CloudGaming:
         date = datetime.datetime.strptime(datetime_str, f"%Y-%m-%d %H:%M:%S").date()
         return date
 
-    def avg_spent_per_session(self, df):
+    def avg_spent_per_session(self, user_id):
         """
         Get the average time per session in the given df,
         and also returns the sum of all time spent across all sessions
         """
-        sessions = df["session_id"].unique()
+        user_data = self.current_data[
+            self.current_data["client_user_id"] == user_id
+        ]
+        sessions = user_data["session_id"].unique()
 
         total = 0
         for session in sessions:
@@ -101,10 +114,10 @@ class CloudGaming:
                 datetime_str, f"%Y-%m-%d %H:%M:%S"
             )
             session_start = get_date(
-                df[df["session_id"] == session].iloc[0]["timestamp"]
+                user_data[user_data["session_id"] == session].iloc[0]["timestamp"]
             )
             session_end = get_date(
-                df[df["session_id"] == session].iloc[-1]["timestamp"]
+                user_data[user_data["session_id"] == session].iloc[-1]["timestamp"]
             )
             diff = session_start - session_end
             total += diff.total_seconds()
@@ -155,7 +168,7 @@ class CloudGaming:
         print("Average Dropped Frames :", float(groupby_df["dropped_frames"]))
         print("Average bitrate:", float(groupby_df["bitrate"]))
 
-    def get_status_of_last_week(self):
+    def get_status_of_last_week(self, save_to_txt=True):
 
         # Get the number of sessions
         current_date = self.time_interval.iloc[0]["timestamp"]
@@ -193,7 +206,53 @@ class CloudGaming:
                 self.start_date + datetime.timedelta(days=num_days_to_fetch),
             ]
         )
-        self.user_data = self.current_data[self.current_data["client_user_id"] == self.user_id]
+        self.user_data = self.current_data[
+            self.current_data["client_user_id"] == self.user_id
+        ]
 
     def predict_next_session_time(self):
         return self.avg_spent_per_session(self.user_data)[0]
+
+    def print_user_summary(self, save_to_txt=True):
+        """
+        Prints the user summary, which includes the following:
+            * Number of sessions
+            * Date of first session
+            * Date of most recent session
+            * Average time spent per session
+            * Most frequently used device
+            * Devices used
+            * Average of : 1) Round trip time (RTT) 2) Frames per Second 3) Dropped Frames 4) bitrate
+            * Total number of bad sessions (predicted using ML model)
+            * Estimated next session time
+            * Super user or Not (a user who has sessions time more than 60 min in a week)
+        """
+        if self.user_data.empty:
+            print("User not Found try again\n")
+        else:
+            print("User found!!\n")
+            print(f"User with id : {self.user_id}")
+            print(f"\tNumber of sessions : {self.get_num_sessions()}")
+            print(f"\tDate of first session : {self.get_session(0)}")
+            print(
+                f"\tAverage time spent per session : {format_time(self.avg_spent_per_session(self.user_data)[0])}"
+            )
+            print(f"\tDate of most recent session : {self.get_session(-1)}")
+            print(f"Most frequently used device : {self.get_most_used_device()[1]}")
+            print(f"Devices used : {self.get_most_used_device()[0]}")
+            print(f"Estimated next session time : {self.avg_spent_per_session(self.user_data)[0]}")
+            print(f"Super user : {self.is_super_user()}")
+            self.get_statistics()
+        
+    def rank_users_by_gaming_time(self):
+        get_dict = lambda y: dict((self.avg_spent_per_session(x), len(x)) for x in y)
+        times_spent = get_dict(self.current_data['client_user_id'].unique())
+        ranked_list = list(sorted(times_spent.items(), key=lambda item: item[1], reverse=True))[:5]
+        i = 0
+        print(f"Rank{' ' * 20}User id{' ' * 18}Time spent gaming")
+        for item in ranked_list:
+            user_id = item[0]
+            time_spent_gaming = item[1]
+            print(f"{i}\t{user_id}\t\t{time_spent_gaming}")
+            i += 1
+

@@ -3,40 +3,7 @@ from utils import *
 
 if __name__ == "__main__":
 
-    cloud_gaming = CloudGaming(1, 0)
-
-
-    # get_date = lambda datetime_str: datetime.datetime.strptime(datetime_str, f"%Y-%m-%d %H:%M:%S")
-    # first_session = get_date(user_df.iloc[0]["timestamp"])
-    
-    # avg = 0 
-    # for session in sessions:
-    #     get_date = lambda datetime_str: datetime.datetime.strptime(datetime_str, f"%Y-%m-%d %H:%M:%S")
-    #     first_session = get_date(user_df[user_df["session_id"] == session].iloc[0]["timestamp"])
-    #     last_session = get_date(user_df[user_df["session_id"] == session].iloc[-1]["timestamp"])
-    #     diff = last_session - first_session
-    #     avg += diff.seconds
-    #     print(format_time(diff.seconds))
-    # print(avg // len(sessions))
-    # print(format_time(avg // len(sessions)))
-
-    # GET THE SPENT ON A SESSION
-    # datetime_str = fetched_data[fetched_data['client_user_id'] == '052f1085-d37f-41c3-b003-5e7a2c64f075'].iloc[0]['timestamp']
-    # start_time = datetime.datetime.strptime(datetime_str, f"%Y-%m-%d %H:%M:%S")
-
-    # datetime_str = fetched_data[fetched_data['client_user_id'] == '052f1085-d37f-41c3-b003-5e7a2c64f075'].iloc[1]['timestamp']
-    # end_time = datetime.datetime.strptime(datetime_str, f"%Y-%m-%d %H:%M:%S")
-
-    # delta = end_time - start_time
-    # hours = delta.seconds // 3600
-    # delta = delta.seconds % 3600
-    # minutes = delta // 60
-    # delta = delta % 60
-    # seconds = delta
-    # print(f"{hours} hrs : {minutes} minutes : {seconds} seconds")
-
-    # print(fetched_data.groupby(['client_user_id']).mean())
-
+    cloud_gaming = CloudGaming()
     while True:
         command = int(
             input(
@@ -50,13 +17,30 @@ if __name__ == "__main__":
             )
         )
         if command == 1:
-            cloud_gaming.fetch_data(3)
-        # elif command == 2:
-        #     add_room(universities)
-        # elif command == 3:
-        #     print_institution(universities)
-        # elif command == 4:
-        #     assign_activity(universities, "Classroom")
-        # elif command == 5:
-        #     assign_activity(universities, "Auditorium")
-        # elif command == 6:
+            # Get the status for the last 7 days
+            cloud_gaming.get_status_of_last_week()
+        elif command == 2:
+            # Print user summarya
+            find_another_user = True
+            while find_another_user:
+                user_id = input("Enter user id:\n")
+                time_interval = input("Enter period (yy/mm/dd - yy/mm/dd) :\n")
+                cloud_gaming.update_query_data(user_id, time_interval)
+                cloud_gaming.print_user_summary(save_to_txt=True)
+                find_another_user = input("Find another user ? (yes/No)\n")
+                find_another_user = True if find_another_user.lower() == "yes" else False
+        elif command == 3:
+            # Predict user next session duration
+            user_id = input("Enter user id:\n")
+            cloud_gaming.update_query_data(user_id)
+            print(f"The estimated next session time is: {cloud_gaming.predict_next_session_time(cloud_gaming.user_data)}")
+        elif command == 4:
+            # Fetch new data and update users data and ML model
+            cloud_gaming.fetch_data()
+        elif command == 5:
+            # Get top 5 users based on time spent gaming
+            cloud_gaming.rank_users_by_gaming_time()
+        elif command == 6:
+            # Exit
+            print('Good bye!!')
+            break
