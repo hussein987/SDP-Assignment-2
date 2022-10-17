@@ -2,7 +2,7 @@
 This repository contains the implementation of the [2nd Assignment](https://hackmd.io/@gFZmdMTOQxGFHEFqqU8pMQ/S1cZqwefo) of Software-Design-with-Python course
 
 ## Task 1
-
+The **Remote control pattern** were used to execute the commands.  
 ### How to run:
 Run this command in your terminal:
 `python3 main.py`
@@ -28,6 +28,7 @@ institute and it will be automatically loaded.
 
 ### Using Docker
 To build the image: `docker image build -t sdpy:1 .`
+
 To run the image: `docker run -i -t sdpy:1`
 
 
