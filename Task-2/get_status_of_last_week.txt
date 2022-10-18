@@ -1,0 +1,5 @@
+Saving the contents to a file
+Total sessions : 551
+Average time spent per session : 1.0 hrs : 1.0 minutes : 3.0 seconds
+Sum of hours spent by all users : 560.0 hrs : 38.0 minutes : 35.0 seconds
+

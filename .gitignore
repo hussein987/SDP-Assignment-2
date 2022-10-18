@@ -132,3 +132,4 @@ dmypy.json
 # data files
 data
 test.ipynb
+*.csv

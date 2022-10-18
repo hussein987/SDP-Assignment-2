@@ -1,6 +1,7 @@
 import datetime
 import io
 from contextlib import redirect_stdout
+import os
 
 
 def parse_date(date_string, separator):
@@ -17,6 +18,11 @@ def format_time(seconds):
     seconds = delta
     return f"{hours} hrs : {minutes} minutes : {seconds} seconds"
 
+def clear_data():
+        for item in os.listdir(os.getcwd()):
+            if item.endswith(".csv"):
+                print(f"Removing: {item}")
+                os.remove(os.path.join(os.getcwd(), item))
 
 def save_to_file(func):
     def wrapper(*args, **kwd_args):
@@ -25,7 +31,8 @@ def save_to_file(func):
             with redirect_stdout(redirected_out):
                 print("Saving the contents to a file")
                 func(*args, **kwd_args)
-            return redirected_out.getvalue()
+            with open(f'{func.__name__}.txt', 'a') as f:
+                f.write(redirected_out.getvalue())
         else:
             func(*args, **kwd_args)
 
