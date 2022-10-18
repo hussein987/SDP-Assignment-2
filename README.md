@@ -42,7 +42,7 @@ To run the image: `docker run -i -t sdpy:1`
 The task is to design and implement a system that will analyze cloud gaming users
 
 ### How to run:
-python3 main.py
+`python3 main.py`
 
 example:
 
